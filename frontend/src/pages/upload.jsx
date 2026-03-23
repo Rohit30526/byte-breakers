@@ -13,49 +13,42 @@ export default function Upload() {
     const selected = e.target.files[0];
     if (!selected) return;
 
-    // ✅ VALIDATION
     const validTypes = ["image/jpeg", "image/png", "application/pdf"];
 
     if (!validTypes.includes(selected.type)) {
-      setError("Only JPG, PNG, or PDF files are allowed");
+      setError("Only JPG, PNG, or PDF allowed");
       return;
     }
 
     if (selected.size > 5 * 1024 * 1024) {
-      setError("File size must be less than 5MB");
+      setError("File must be under 5MB");
       return;
     }
 
     setError("");
 
-    // ✅ STORE FILE DATA
     setFile({
-      preview: URL.createObjectURL(selected),
+      file: selected,
       name: selected.name,
-      size: (selected.size / 1024 / 1024).toFixed(2),
+      preview: URL.createObjectURL(selected),
       type: selected.type,
     });
-
-    // 👉 AUTO MOVE TO PROCESSING (simulate)
-    setTimeout(() => {
-      navigate("/selfie");
-    }, 1500);
   };
 
   return (
     <section className="upload-container">
 
-      {/* STEP PROGRESS */}
+      {/* STEPS */}
       <div className="steps">
-        <div className="step active">1. ID Verification</div>
-        <div className="step">2. Face Match</div>
-        <div className="step">3. KYC Result</div>
+        <div className="step active">1 ID Verification</div>
+        <div className="step">2 Face Match</div>
+        <div className="step">3 Liveness Check</div>
+        <div className="step">4 KYC Result</div>
       </div>
 
-      {/* TITLE */}
-      <h2>Upload Aadhaar / ID Document</h2>
+      <h2>Upload Identity Document</h2>
       <p className="subtitle">
-        Upload a clear image of your Aadhaar card (front side)
+        Please provide a clear photo of your ID
       </p>
 
       {/* UPLOAD BOX */}
@@ -63,11 +56,10 @@ export default function Upload() {
 
         {!file ? (
           <>
-            <div className="upload-icon">📄</div>
-            <p>Drag & drop your document here</p>
-            <span>Supports JPG, PNG, PDF</span>
+            <div className="upload-icon">⬆</div>
+            <p>Drag & drop your ID here</p>
+            <span>or click to browse from your device</span>
 
-            {/* 🔥 HIDDEN INPUT */}
             <input
               type="file"
               ref={fileInputRef}
@@ -75,7 +67,6 @@ export default function Upload() {
               style={{ display: "none" }}
             />
 
-            {/* 🔥 BUTTON */}
             <button
               className="upload-btn"
               onClick={() => fileInputRef.current.click()}
@@ -86,32 +77,40 @@ export default function Upload() {
             {error && <p className="error">{error}</p>}
           </>
         ) : (
-          <div className="preview-section">
-            {file.type.includes("image") ? (
-              <img src={file.preview} alt="preview" />
-            ) : (
-              <p>📄 PDF Uploaded</p>
+          <>
+            {/* FILE NAME */}
+            <p className="file-name">{file.name}</p>
+
+            {/* PREVIEW */}
+            {file.type.includes("image") && (
+              <img src={file.preview} className="preview-img" />
             )}
 
-            <div className="file-info">
-              <p><strong>{file.name}</strong></p>
-              <p>{file.size} MB</p>
-            </div>
-          </div>
+            <span>File uploaded successfully</span>
+          </>
         )}
-
       </div>
 
       {/* GUIDELINES */}
       <div className="guidelines">
         <h4>Security Guidelines</h4>
         <ul>
-          <li>Ensure all corners of Aadhaar are visible</li>
-          <li>No blur or glare</li>
+          <li>Ensure all four corners are visible</li>
+          <li>Avoid glare and shadows</li>
           <li>Text must be readable</li>
-          <li>Use original document (no photocopy)</li>
+          <li>Document must be valid</li>
         </ul>
       </div>
+
+      {/* 🔥 CONTINUE BUTTON */}
+      {file && (
+        <button
+          className="continue-btn"
+          onClick={() => navigate("/selfie")}
+        >
+          Continue to Face Match
+        </button>
+      )}
 
     </section>
   );
