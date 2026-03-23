@@ -38,3 +38,11 @@ build/
 
 # Env
 .env
+
+venv/
+__pycache__/
+node_modules/
+.env
+dist/
+build/
+*.log
