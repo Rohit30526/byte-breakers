@@ -1,9 +1,11 @@
 import logo from "../assets/bot.jpg";
+import RestartButton from "../components/RestartButton";
 
 export default function MainLayout({ children }) {
   return (
     <div style={{ padding: "20px 60px" }}>
-      {/* Navbar */}
+      
+      {/* NAVBAR */}
       <nav
         style={{
           display: "flex",
@@ -18,21 +20,11 @@ export default function MainLayout({ children }) {
           <span style={{ fontWeight: "600" }}>RakshaKYC AI</span>
         </div>
 
-        {/* Restart Button */}
-        <button
-          style={{
-            background: "#0f172a",
-            color: "white",
-            border: "none",
-            padding: "8px 18px",
-            borderRadius: "10px",
-            cursor: "pointer",
-          }}
-        >
-          Restart
-        </button>
+        {/* ✅ GLOBAL RESTART BUTTON */}
+        <RestartButton />
       </nav>
 
+      {/* PAGE CONTENT */}
       {children}
     </div>
   );

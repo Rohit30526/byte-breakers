@@ -14,7 +14,7 @@ export default function Selfie() {
 
     // simulate processing → next page
     setTimeout(() => {
-      navigate("/result");
+      navigate("/liveness");
     }, 1500);
   };
 

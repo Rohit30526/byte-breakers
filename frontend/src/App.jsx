@@ -3,7 +3,8 @@ import MainLayout from "./layout/mainlayout";
 import Hero from "./pages/hero";
 import Upload from "./pages/upload";
 import Selfie from "./pages/selfie";
-
+import Liveness from "./pages/liveness";
+import Result from "./pages/result";
 function App() {
   return (
     <MainLayout>
@@ -11,7 +12,9 @@ function App() {
         <Route path="/" element={<Hero />} />
         <Route path="/upload" element={<Upload />} />
         <Route path="/selfie" element={<Selfie />} />
-      </Routes>
+        <Route path="/liveness" element={<Liveness />} />
+        <Route path="/result" element={<Result />} />
+        </Routes>
     </MainLayout>
   );
 }

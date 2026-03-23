@@ -1,0 +1,103 @@
+.result-container {
+  text-align: center;
+  padding: 60px 8%;
+}
+
+/* SUCCESS */
+.success .check {
+  font-size: 40px;
+  color: #22c55e;
+}
+
+.success h2 {
+  margin-top: 10px;
+  color: #0f172a;
+}
+
+.success p {
+  color: #64748b;
+}
+
+/* CARDS */
+.result-cards {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.card {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 15px;
+  width: 220px;
+  text-align: left;
+}
+
+.score {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.success-text {
+  color: #22c55e;
+}
+
+/* FRAUD BOX */
+.fraud-box {
+  background: #0f172a;
+  color: white;
+  margin: 40px auto;
+  padding: 30px;
+  border-radius: 20px;
+  max-width: 650px;
+  text-align: left;
+}
+
+.fraud-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.low-risk {
+  background: #22c55e;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.fraud-content {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.risk-score h1 {
+  font-size: 40px;
+}
+
+/* RISK BAR */
+.risk-bar {
+  width: 100%;
+  height: 6px;
+  background: #334155;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.risk-fill {
+  width: 15%;
+  height: 100%;
+  background: #22c55e;
+}
+
+/* BUTTON */
+.restart-btn {
+  margin-top: 20px;
+  padding: 12px 20px;
+  background: #e2e8f0;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}

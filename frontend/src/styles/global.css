@@ -82,3 +82,17 @@ background: var(--primary);
 background: var(--primary);
 color: white;
 }
+
+/* ================= RESTART BUTTON ================= */
+.restart-btn {
+  position: absolute;
+  top: 20px;
+  right: 40px;
+  background: #f1f5f9;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #0f172a;
+}
