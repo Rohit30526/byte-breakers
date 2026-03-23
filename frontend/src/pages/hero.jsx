@@ -13,7 +13,8 @@ export default function Hero() {
                 <span className="badge">⚡ AI-POWERED KYC AGENT</span>
 
                 <h1>
-                    Verify Identity <br />
+                    Verify <br />
+                    Identity <br />
                     <span>Instantly.</span>
                 </h1>
 
@@ -24,28 +25,11 @@ export default function Hero() {
 
                 <div className="hero-buttons">
                     <button
-                        className="primary-btn"
+                        className="primary-btn large"
                         onClick={() => navigate("/upload")}
                     >
-                        Start Verification
+                        Start Verification →
                     </button>
-
-                    <button className="secondary-btn">View Demo</button>
-                </div>
-
-                <div className="hero-stats">
-                    <div>
-                        <h3>99.9%</h3>
-                        <p>Accuracy</p>
-                    </div>
-                    <div>
-                        <h3>&lt; 5s</h3>
-                        <p>Processing</p>
-                    </div>
-                    <div>
-                        <h3>256-bit</h3>
-                        <p>Encryption</p>
-                    </div>
                 </div>
             </div>
 

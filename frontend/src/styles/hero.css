@@ -18,13 +18,13 @@
   color: #0f766e;
   padding: 6px 14px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 15px;
   display: inline-block;
   margin-bottom: 20px;
 }
 
 .hero-left h1 {
-  font-size: 52px;
+  font-size: 80px;
   font-weight: 800;
   color: #0f172a;
   line-height: 1.2;
@@ -35,7 +35,7 @@
 }
 
 .hero-left p {
-  margin: 20px 0;
+  margin: 35px 0;
   color: #64748b;
   line-height: 1.7;
 }
@@ -123,7 +123,12 @@
   border-radius: 30px;
   text-align: center;
   height: 100%;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
+
+  /* 🔥 ADD THIS */
+  border: 1px solid #e2e8f0;
+  box-shadow: 
+    0 25px 60px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.6);
 }
 
 /* ICON */
@@ -181,4 +186,11 @@
   margin-top: 12px;
   font-size: 12px;
   color: #94a3b8;
+}
+
+/* ===== LARGE BUTTON start registration ===== */
+.primary-btn.large {
+  padding: 16px 32px;
+  font-size: 16px;
+  border-radius: 14px;
 }
