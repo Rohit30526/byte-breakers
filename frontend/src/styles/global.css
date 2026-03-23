@@ -1,0 +1,84 @@
+/* ================= RESET ================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  }
+
+/* ================= ROOT VARIABLES (Design System 🔥) ================= */
+:root {
+--bg-main: #f8fafc;
+--bg-secondary: #eef2ff;
+
+--primary: #6366f1;
+--primary-dark: #4f46e5;
+
+--text-main: #0f172a;
+--text-secondary: #64748b;
+
+--border: #e5e7eb;
+
+--radius: 12px;
+}
+
+/* ================= GLOBAL BODY ================= */
+body {
+background: linear-gradient(135deg, var(--bg-main), var(--bg-secondary));
+color: var(--text-main);
+font-family: "Inter", sans-serif;
+-webkit-font-smoothing: antialiased;
+}
+
+/* ================= ROOT FIX ================= */
+#root {
+background: transparent;
+min-height: 100vh;
+}
+
+/* ================= GLOBAL ELEMENTS ================= */
+h1, h2, h3, h4 {
+color: var(--text-main);
+font-weight: 700;
+}
+
+p {
+color: var(--text-secondary);
+line-height: 1.6;
+}
+
+/* ================= LINKS ================= */
+a {
+text-decoration: none;
+color: inherit;
+}
+
+/* ================= BUTTON BASE ================= */
+button {
+font-family: inherit;
+border-radius: var(--radius);
+}
+
+/* ================= SCROLLBAR (MODERN LOOK 🔥) ================= */
+::-webkit-scrollbar {
+width: 8px;
+}
+
+::-webkit-scrollbar-track {
+background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+background: #c7d2fe;
+border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+background: var(--primary);
+}
+
+/* ================= SELECTION ================= */
+::selection {
+background: var(--primary);
+color: white;
+}
