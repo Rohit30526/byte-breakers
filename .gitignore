@@ -1,0 +1,30 @@
+# 🔥 Python virtual environments
+venv/
+AI_Function/venv/
+env/
+*.venv
+
+# 🔥 Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# 🔥 OS files
+.DS_Store
+Thumbs.db
+
+# 🔥 VS Code
+.vscode/
+
+# 🔥 Node modules (you have frontend)
+node_modules/
+
+# 🔥 Uploads / temp files
+uploads/
+data/
+
+# 🔥 Logs
+*.log
+
+# 🔥 Environment variables
+.env
