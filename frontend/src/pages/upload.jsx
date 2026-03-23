@@ -1,116 +1,128 @@
-import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import "../styles/upload.css";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Upload() {
-  const fileInputRef = useRef(null);
+  const [file, setFile] = useState(null);
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  const [file, setFile] = useState(null);
-  const [error, setError] = useState("");
+  // Select file
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setMessage("");
+    }
+  };
 
-  const handleFile = (e) => {
-    const selected = e.target.files[0];
-    if (!selected) return;
-
-    const validTypes = ["image/jpeg", "image/png", "application/pdf"];
-
-    if (!validTypes.includes(selected.type)) {
-      setError("Only JPG, PNG, or PDF allowed");
+  // Upload + move to selfie
+  const handleUpload = async () => {
+    if (!file) {
+      alert("Please select a file first");
       return;
     }
 
-    if (selected.size > 5 * 1024 * 1024) {
-      setError("File must be under 5MB");
-      return;
+    // ✅ Store file globally (for selfie page)
+    window.selectedIdFile = file;
+
+    try {
+      // (Optional) check backend connection
+      const res = await fetch("http://127.0.0.1:8001/");
+      const data = await res.json();
+
+      console.log(data);
+      setMessage("Backend connected ✅");
+
+      // ✅ MOVE TO NEXT PAGE
+      setTimeout(() => {
+        navigate("/selfie");
+      }, 800); // small delay for UX
+
+    } catch (error) {
+      console.error(error);
+      setMessage("Backend connection failed ❌");
     }
-
-    setError("");
-
-    setFile({
-      file: selected,
-      name: selected.name,
-      preview: URL.createObjectURL(selected),
-      type: selected.type,
-    });
   };
 
   return (
     <section className="upload-container">
 
-      {/* STEPS */}
+      {/* TOP STEPS */}
       <div className="steps">
-        <div className="step active">1 ID Verification</div>
-        <div className="step">2 Face Match</div>
-        <div className="step">3 Liveness Check</div>
-        <div className="step">4 KYC Result</div>
+        <div className="step active">1. ID Verification</div>
+        <div className="step">2. Face Match</div>
+        <div className="step">3. KYC Result</div>
       </div>
 
+      {/* TITLE */}
       <h2>Upload Identity Document</h2>
       <p className="subtitle">
-        Please provide a clear photo of your ID
+        Please provide a clear photo of your government-issued ID
       </p>
 
       {/* UPLOAD BOX */}
       <div className="upload-box">
 
-        {!file ? (
-          <>
-            <div className="upload-icon">⬆</div>
-            <p>Drag & drop your ID here</p>
-            <span>or click to browse from your device</span>
+        <div className="upload-icon">⬆</div>
 
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFile}
-              style={{ display: "none" }}
-            />
+        <p>Drag and drop your ID here</p>
+        <span>or click to browse from your device</span>
 
-            <button
-              className="upload-btn"
-              onClick={() => fileInputRef.current.click()}
-            >
-              Select Document
-            </button>
+        {/* Hidden file input */}
+        <input
+          type="file"
+          id="fileInput"
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
 
-            {error && <p className="error">{error}</p>}
-          </>
-        ) : (
-          <>
-            {/* FILE NAME */}
-            <p className="file-name">{file.name}</p>
+        {/* Select button */}
+        <button
+          className="upload-btn"
+          onClick={() => document.getElementById("fileInput").click()}
+        >
+          Select Document
+        </button>
 
-            {/* PREVIEW */}
-            {file.type.includes("image") && (
-              <img src={file.preview} className="preview-img" />
-            )}
+        {/* Upload button */}
+        <button
+          className="upload-btn"
+          onClick={handleUpload}
+        >
+          Upload & Continue →
+        </button>
 
-            <span>File uploaded successfully</span>
-          </>
+        {/* Show file name */}
+        {file && (
+          <p className="file-name">
+            Selected: {file.name}
+          </p>
         )}
+
+        {/* Status message */}
+        {message && (
+          <p className="status-msg">{message}</p>
+        )}
+
+        <div className="upload-tags">
+          <span>OCR READY</span>
+          <span>AUTHENTIC</span>
+          <span>HIGH RES</span>
+        </div>
+
       </div>
 
       {/* GUIDELINES */}
       <div className="guidelines">
         <h4>Security Guidelines</h4>
         <ul>
-          <li>Ensure all four corners are visible</li>
-          <li>Avoid glare and shadows</li>
-          <li>Text must be readable</li>
-          <li>Document must be valid</li>
+          <li>Ensure all four corners of the ID are visible</li>
+          <li>Avoid glare and shadows on the document</li>
+          <li>The text must be clearly readable</li>
+          <li>Document must be valid and not expired</li>
         </ul>
       </div>
-
-      {/* 🔥 CONTINUE BUTTON */}
-      {file && (
-        <button
-          className="continue-btn"
-          onClick={() => navigate("/selfie")}
-        >
-          Continue to Face Match
-        </button>
-      )}
 
     </section>
   );

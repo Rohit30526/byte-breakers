@@ -161,3 +161,13 @@
   cursor: pointer;
   box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
 }
+.preview-img {
+  width: 250px;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+.success-text {
+  color: green;
+  font-size: 14px;
+}
