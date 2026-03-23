@@ -110,3 +110,27 @@
   color: #64748b;
   margin-bottom: 5px;
 }
+
+.file-input {
+  margin: 10px 0;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+/* PREVIEW */
+.preview-section img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.file-info {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #334155;
+}

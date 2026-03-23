@@ -1,0 +1,45 @@
+.selfie-container {
+  text-align: center;
+  padding: 60px 8%;
+}
+
+/* CAMERA */
+.camera-box {
+  width: 300px;
+  height: 300px;
+  margin: 30px auto;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 8px solid #e2e8f0;
+}
+
+.webcam {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* BUTTON */
+.capture-btn {
+  background: #0f172a;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+}
+
+/* TAGS */
+.tags {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.tags span {
+  font-size: 12px;
+  background: #f1f5f9;
+  padding: 6px 10px;
+  border-radius: 10px;
+}
