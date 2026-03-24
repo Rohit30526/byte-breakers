@@ -1,103 +1,90 @@
-import face_recognition
+from deepface import DeepFace
 import cv2
-import numpy as np
+import os
+import uuid
 
 
-# 🔥 IMAGE ENHANCEMENT
-def enhance_image(img):
-    # Resize for better detection
-    img = cv2.resize(img, None, fx=1.5, fy=1.5)
-
-    # Convert to RGB (important)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-    return img
-
-
-# 🔥 EXTRACT BEST FACE ENCODING
-def get_face_encoding(image):
-    locations = face_recognition.face_locations(image, model="hog")
-
-    if len(locations) == 0:
-        return None, 0
-
-    encodings = face_recognition.face_encodings(image, locations)
-
-    # Use average encoding (better stability)
-    encoding = np.mean(encodings, axis=0)
-
-    return encoding, len(locations)
-
-
-# 🔥 MAIN FUNCTION
-def compare_faces(id_path, selfie_path):
+# 🔥 EXTRACT FACE FROM IMAGE
+def extract_face(image_path):
     try:
-        # Load images
-        id_img = cv2.imread(id_path)
-        selfie_img = cv2.imread(selfie_path)
+        faces = DeepFace.extract_faces(
+            img_path=image_path,
+            detector_backend="retinaface",   # best accuracy
+            enforce_detection=True
+        )
 
-        if id_img is None or selfie_img is None:
+        if not faces:
+            return None
+
+        # ✅ Pick largest face (important improvement)
+        largest_face = max(faces, key=lambda x: x["facial_area"]["w"] * x["facial_area"]["h"])
+
+        face = largest_face["face"]
+
+        # Convert from float (0–1) → uint8 (0–255)
+        face = (face * 255).astype("uint8")
+
+        # Save temp file
+        temp_path = f"temp_{uuid.uuid4().hex}.jpg"
+        cv2.imwrite(temp_path, face)
+
+        return temp_path
+
+    except Exception as e:
+        print("Face extraction error:", e)
+        return None
+
+
+# 🔥 MAIN FUNCTION (ID vs SELFIE)
+def compare_id_with_selfie(id_path, selfie_path):
+    id_face_path = None
+    selfie_face_path = None
+
+    try:
+        # 🔹 Extract face from ID
+        id_face_path = extract_face(id_path)
+        if id_face_path is None:
             return {
                 "match": False,
-                "confidence": 0,
-                "error": "Image not loaded"
+                "error": "No face found in ID card"
             }
 
-        # Enhance
-        id_img = enhance_image(id_img)
-        selfie_img = enhance_image(selfie_img)
-
-        # Get encodings
-        id_encoding, id_faces = get_face_encoding(id_img)
-        selfie_encoding, selfie_faces = get_face_encoding(selfie_img)
-
-        # ❌ No face detected
-        if id_encoding is None or selfie_encoding is None:
+        # 🔹 Extract face from selfie
+        selfie_face_path = extract_face(selfie_path)
+        if selfie_face_path is None:
             return {
                 "match": False,
-                "confidence": 0,
-                "error": "Face not detected"
+                "error": "No face found in selfie"
             }
 
-        # ❌ Multiple faces (fraud)
-        if id_faces > 1 or selfie_faces > 1:
-            return {
-                "match": False,
-                "confidence": 0,
-                "error": "Multiple faces detected"
-            }
+        # 🔥 Face comparison
+        result = DeepFace.verify(
+            img1_path=id_face_path,
+            img2_path=selfie_face_path,
+            model_name="ArcFace",           # 🔥 best accuracy
+            detector_backend="retinaface",
+            enforce_detection=True
+        )
 
-        # 🔥 FACE DISTANCE
-        distance = face_recognition.face_distance(
-            [id_encoding],
-            selfie_encoding
-        )[0]
-
-        # 🔥 ADAPTIVE THRESHOLD
-        if distance < 0.45:
-            match = True
-        elif distance < 0.6:
-            match = True
-        else:
-            match = False
-
-        # 🔥 CONFIDENCE SCORE
-        confidence = (1 - distance) * 100
-        confidence = round(float(confidence), 2)
+        distance = result["distance"]
+        confidence = round((1 - distance) * 100, 2)
 
         return {
-            "match": match,
+            "match": result["verified"],
             "confidence": confidence,
-            "distance": round(float(distance), 4),
-            "faces_detected": {
-                "id": id_faces,
-                "selfie": selfie_faces
-            }
+            "distance": round(distance, 4)
         }
 
     except Exception as e:
         return {
             "match": False,
-            "confidence": 0,
             "error": str(e)
         }
+
+    finally:
+        # 🔥 Cleanup temp files (VERY IMPORTANT)
+        if id_face_path and os.path.exists(id_face_path):
+            os.remove(id_face_path)
+
+        if selfie_face_path and os.path.exists(selfie_face_path):
+            os.remove(selfie_face_path)

@@ -1,8 +1,8 @@
 fastapi
 uvicorn
-python-multipart
-easyocr
 opencv-python
-face_recognition
 numpy
-pillow
+easyocr
+deepface
+protobuf==6.31.1
+tensorflow==2.21.0

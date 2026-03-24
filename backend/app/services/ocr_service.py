@@ -3,20 +3,46 @@ import easyocr
 import re
 import numpy as np
 
+# Initialize OCR reader
 reader = easyocr.Reader(['en'], gpu=False)
 
 
-# 🔥 SUPER PREPROCESSING
+# 🔥 ROTATION CORRECTION
+def correct_rotation(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    coords = np.column_stack(np.where(gray > 0))
+
+    if len(coords) == 0:
+        return img
+
+    angle = cv2.minAreaRect(coords)[-1]
+
+    if angle < -45:
+        angle = -(90 + angle)
+    else:
+        angle = -angle
+
+    (h, w) = img.shape[:2]
+    center = (w // 2, h // 2)
+
+    M = cv2.getRotationMatrix2D(center, angle, 1.0)
+    return cv2.warpAffine(img, M, (w, h),
+                          flags=cv2.INTER_CUBIC,
+                          borderMode=cv2.BORDER_REPLICATE)
+
+
+# 🔥 SMART CROP
+def crop_id_region(img):
+    h, w = img.shape[:2]
+    return img[int(h * 0.2):int(h * 0.9), int(w * 0.05):int(w * 0.95)]
+
+
+# 🔥 PREPROCESS
 def preprocess_image(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    # Increase contrast
     gray = cv2.convertScaleAbs(gray, alpha=1.5, beta=0)
-
-    # Noise removal
     blur = cv2.GaussianBlur(gray, (3, 3), 0)
 
-    # Adaptive threshold (better than normal)
     thresh = cv2.adaptiveThreshold(
         blur, 255,
         cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
@@ -24,120 +50,153 @@ def preprocess_image(img):
         11, 2
     )
 
-    # Sharpen
-    kernel = np.array([[0, -1, 0],
-                       [-1, 5,-1],
-                       [0, -1, 0]])
-    sharpen = cv2.filter2D(thresh, -1, kernel)
-
-    return sharpen
+    return thresh
 
 
-# 🔥 MULTI OCR PASS
+# 🔥 OCR
 def extract_text(img):
     processed = preprocess_image(img)
 
-    result1 = reader.readtext(processed, detail=0)
-    result2 = reader.readtext(img, detail=0)
+    result = reader.readtext(processed, detail=0)
 
-    text = " ".join(result1 + result2)
+    if len(result) < 3:
+        result += reader.readtext(img, detail=0)
 
-    return text.upper()
+    return " ".join(result).upper()
 
 
 # 🔥 CLEAN TEXT
 def clean_text(text):
     text = re.sub(r'[^A-Z0-9/\-\s]', ' ', text)
-    text = re.sub(r'\s+', ' ', text)
-    return text.strip()
+    return re.sub(r'\s+', ' ', text).strip()
 
 
-# 🔥 AADHAAR (STRICT + FORMAT FIX)
+# =========================
+# 🔥 DOCUMENT DETECTION
+# =========================
+def detect_document_type(text):
+    text = text.upper()
+
+    pan_pattern = r'\b[A-Z]{5}[0-9]{4}[A-Z]\b'
+
+    if re.search(pan_pattern, text):
+        return "PAN"
+
+    if "AADHAAR" in text or "GOVERNMENT OF INDIA" in text:
+        return "AADHAAR"
+
+    return "UNKNOWN"
+
+
+# =========================
+# 🔥 AADHAAR (UNCHANGED)
+# =========================
 def extract_aadhaar(text):
-    matches = re.findall(r'\b\d{4}\s?\d{4}\s?\d{4}\b', text)
-
-    if matches:
-        aadhaar = matches[0]
-        # format nicely
-        aadhaar = re.sub(r'\s+', ' ', aadhaar)
-        return aadhaar
-
-    return "Not Found"
+    match = re.search(r'\b\d{4}\s?\d{4}\s?\d{4}\b', text)
+    return match.group() if match else "Not Found"
 
 
-# 🔥 DOB (MULTIPLE PATTERNS)
 def extract_dob(text):
-    patterns = [
-        r'\b\d{2}/\d{2}/\d{4}\b',
-        r'\b\d{2}-\d{2}-\d{4}\b'
-    ]
-
-    for p in patterns:
-        match = re.search(p, text)
-        if match:
-            return match.group()
-
-    return "Not Found"
+    match = re.search(r'\b\d{2}[-/]\d{2}[-/]\d{4}\b', text)
+    return match.group() if match else "Not Found"
 
 
-# 🔥 NAME (STRUCTURED DETECTION)
 def extract_name(text):
-    lines = text.split()
+    words = text.split()
+    blacklist = {"GOVERNMENT", "INDIA", "AADHAAR", "DOB"}
 
-    blacklist = [
-        "GOVERNMENT", "INDIA", "AADHAAR", "DOB",
-        "MALE", "FEMALE", "YEAR", "UNIQUE",
-        "IDENTIFICATION", "AUTHORITY"
+    candidates = [
+        f"{words[i]} {words[i+1]}"
+        for i in range(len(words)-1)
+        if words[i].isalpha() and words[i+1].isalpha()
+        and words[i] not in blacklist
+        and words[i+1] not in blacklist
     ]
+
+    return max(candidates, key=len) if candidates else "Not Found"
+
+
+# =========================
+# 🔥 PAN LOGIC
+# =========================
+def extract_pan(text):
+    match = re.search(r'\b[A-Z]{5}[0-9]{4}[A-Z]\b', text)
+    return match.group() if match else "Not Found"
+
+
+def extract_pan_name(text):
+    words = text.split()
+
+    blacklist = {
+        "INCOME", "TAX", "DEPARTMENT", "INDIA",
+        "PERMANENT", "ACCOUNT", "NUMBER"
+    }
 
     candidates = []
 
-    for i in range(len(lines) - 1):
-        w1, w2 = lines[i], lines[i+1]
+    for i in range(len(words)-1):
+        w1, w2 = words[i], words[i+1]
 
         if (
             w1.isalpha() and w2.isalpha()
             and w1 not in blacklist
             and w2 not in blacklist
-            and len(w1) > 2 and len(w2) > 2
         ):
             candidates.append(w1 + " " + w2)
 
-    # Prefer longer names (more realistic)
-    candidates = sorted(candidates, key=len, reverse=True)
-
-    return candidates[0] if candidates else "Not Found"
+    return max(candidates, key=len) if candidates else "Not Found"
 
 
-# 🔥 FINAL FUNCTION
+def extract_pan_dob(text):
+    match = re.search(r'\b\d{2}/\d{2}/\d{4}\b', text)
+    return match.group() if match else "Not Found"
+
+
+# =========================
+# 🔥 MAIN FUNCTION (ROUTING)
+# =========================
 def extract_ocr_data(image_path):
     img = cv2.imread(image_path)
 
     if img is None:
+        return {"error": "Image not loaded"}
+
+    # Preprocessing
+    img = correct_rotation(img)
+    img = crop_id_region(img)
+    img = cv2.resize(img, None, fx=2, fy=2)
+
+    text = clean_text(extract_text(img))
+
+    # 🔥 DETECT DOCUMENT TYPE
+    doc_type = detect_document_type(text)
+
+    # 🔥 ROUTE
+    if doc_type == "AADHAAR":
         return {
-            "raw_text": "",
+            "document_type": "AADHAAR",
+            "raw_text": text,
             "data": {
-                "name": "Not Found",
-                "dob": "Not Found",
-                "aadhaar": "Not Found"
+                "name": extract_name(text),
+                "dob": extract_dob(text),
+                "aadhaar": extract_aadhaar(text)
             }
         }
 
-    # Resize for clarity
-    img = cv2.resize(img, None, fx=2, fy=2)
-
-    text = extract_text(img)
-    text = clean_text(text)
-
-    name = extract_name(text)
-    dob = extract_dob(text)
-    aadhaar = extract_aadhaar(text)
-
-    return {
-        "raw_text": text,
-        "data": {
-            "name": name,
-            "dob": dob,
-            "aadhaar": aadhaar
+    elif doc_type == "PAN":
+        return {
+            "document_type": "PAN",
+            "raw_text": text,
+            "data": {
+                "name": extract_pan_name(text),
+                "dob": extract_pan_dob(text),
+                "pan": extract_pan(text)
+            }
         }
-    }
+
+    else:
+        return {
+            "document_type": "UNKNOWN",
+            "raw_text": text,
+            "error": "Document not recognized"
+        }
